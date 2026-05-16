@@ -12,18 +12,22 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
  
-# Install dependencies
-RUN npm install
+# Install dependencies (use `npm ci` for reproducible installs in dev)
+RUN npm ci
  
 # Copy rest of the source code
 COPY . .
  
  
 # Ensure the "node" user owns the application files
+# Note: when you bind-mount the project from the host, this `chown` plus
+# `USER node` can cause permission issues because the host ownership differs.
+# For local dev you can either run the container as root (set `user: root`
+# in `compose.yml`) or remove the `chown`/`USER` here. Keep `USER node` for
+# better security in CI and production images.
 RUN chown -R node:node /app
- 
- 
-# Switch to the built-in non-root "node" user
+
+# Switch to the built-in non-root "node" user (optional for local dev)
 USER node
  
  
